@@ -1,7 +1,7 @@
 import os
 import qrcode
 import cloudinary
-import cloudinary.uploader
+import cloudinary.api
 from PIL import Image, ImageDraw, ImageFont
 from flask import Flask, request, render_template
 
@@ -16,32 +16,26 @@ cloudinary.config(
 )
 
 # Configuration
-IMAGE_FOLDER = r"C:\Users\user\Documents\pin-protected-qr\images"  # Folder containing images
-QR_FOLDER = r"C:\Users\user\Documents\pin-protected-qr\qr_codes"  # Folder to save QR codes
+QR_FOLDER = "qr_codes"  # Folder to save QR codes
 ACCESS_PIN = "7013"  # Set your PIN here
 
 # Ensure QR code folder exists
 os.makedirs(QR_FOLDER, exist_ok=True)
 
-# Store uploaded image data
+# Fetch all images from Cloudinary using pagination
 image_data = {}
+next_cursor = None  # Cursor for pagination
 
-# Upload Images & Generate QR Codes
-for filename in os.listdir(IMAGE_FOLDER):
-    if filename.endswith((".png", ".jpg", ".jpeg")):
-        file_path = os.path.join(IMAGE_FOLDER, filename)
+while True:
+    # Fetch images (1000 at a time)
+    response = cloudinary.api.resources(type="upload", max_results=1000, next_cursor=next_cursor)
+    
+    for img in response["resources"]:
+        image_id = os.path.splitext(os.path.basename(img["public_id"]))[0]  # Extract ID from filename
+        image_data[image_id] = {"url": img["secure_url"], "password": ACCESS_PIN}
 
-        # Upload to Cloudinary using the same filename (without extension)
-        cloudinary_filename = os.path.splitext(filename)[0]
-        upload_result = cloudinary.uploader.upload(file_path, public_id=cloudinary_filename)
-        image_url = upload_result["secure_url"]
-        image_id = upload_result["public_id"]
-
-        # Store image details
-        image_data[image_id] = {"url": image_url, "password": ACCESS_PIN}
-
-        # Generate QR Code linking to Flask app
-        qr_url = f"http://127.0.0.1:5000/view/{image_id}"
+        # Generate QR code linking to Render app
+        qr_url = f"https://your-app-name.onrender.com/view/{image_id}"
         qr = qrcode.make(qr_url)
 
         # Convert QR code to image and add text
@@ -50,8 +44,8 @@ for filename in os.listdir(IMAGE_FOLDER):
         font = ImageFont.load_default()
 
         # Add text (image name) on top of QR code
-        text = os.path.splitext(filename)[0]  # Get filename without extension
-        bbox = draw.textbbox((0, 0), text, font=font)  # Corrected text size calculation
+        text = image_id  # Using Cloudinary filename without extension
+        bbox = draw.textbbox((0, 0), text, font=font)  # Get text size
         text_width = bbox[2] - bbox[0]
         text_height = bbox[3] - bbox[1]
         
@@ -59,10 +53,15 @@ for filename in os.listdir(IMAGE_FOLDER):
         text_position = ((image_width - text_width) // 2, 10)  # Centered at the top
         draw.text(text_position, text, fill="black", font=font)
 
-        # Save QR code with the same filename as the image
-        qr.save(os.path.join(QR_FOLDER, f"{filename}"))
+        # Save QR code with text
+        qr.save(os.path.join(QR_FOLDER, f"{image_id}.png"))
 
-print("✅ Images uploaded & QR codes generated!")
+    # Check if there are more images to fetch
+    next_cursor = response.get("next_cursor")
+    if not next_cursor:
+        break  # Stop when no more images are left
+
+print(f"✅ QR codes generated for {len(image_data)} images!")
 
 
 # Flask Routes

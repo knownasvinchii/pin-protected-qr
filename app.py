@@ -84,6 +84,8 @@ def view_image(img_id):
 
 
 # Start Flask Server
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))  # Use Render's PORT
+if __name__ == "__main__":  
+    port = int(os.environ.get("PORT", 10000))  # Use Render's assigned port  
     app.run(host="0.0.0.0", port=port)
+
+

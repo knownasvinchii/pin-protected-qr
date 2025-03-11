@@ -1,13 +1,63 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enter PIN</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        input {
+            font-size: 20px;
+            padding: 10px;
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            font-size: 18px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-    <h2>Enter PIN to View Image</h2>
-    <form action="" method="post">
-        <input type="password" name="password" placeholder="Enter PIN" required>
-        <button type="submit">Submit</button>
-    </form>
+
+    <div class="container">
+        <h2>Enter PIN to Access Image</h2>
+        <form method="POST">
+            <input type="password" name="password" required placeholder="Enter PIN">
+            <br>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
 </body>
 </html>
